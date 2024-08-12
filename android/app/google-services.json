@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "76532800618",
+    "project_id": "collar-ab0d0",
+    "storage_bucket": "collar-ab0d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76532800618:android:1d9b52ea6d5efc5332be13",
+        "android_client_info": {
+          "package_name": "com.example.collar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcsldgmmIdZRRbzmRAbzwiiK2qe5yVIp4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
