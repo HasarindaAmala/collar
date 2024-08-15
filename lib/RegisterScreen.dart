@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -8,6 +11,9 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  late File image;
+  bool isImageUploaded = false;
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -28,7 +34,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               left: width * 0.32,
               child: Container(
                 width: width * 0.35,
-                child: Image.asset("images/Ellipse 9.png"),
+                height: width * 0.35,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white24,
+                  image: isImageUploaded == true
+                      ? DecorationImage(image: FileImage(image),fit: BoxFit.cover)
+                      : const DecorationImage(
+                          image: AssetImage(
+                              "images/gray-user-profile-icon-png-fP8Q1P 1.png"),
+                    fit: BoxFit.fitHeight,
+                  ),
+                ),
               )),
           Positioned(
               top: height * 0.15,
@@ -38,7 +55,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     backgroundColor: Color(0xFF6CE04F),
                     foregroundColor: Colors.white,
                     shape: const CircleBorder()),
-                onPressed: () {},
+                onPressed: () async {
+                  await uploadProfilePic();
+                },
                 child: Icon(Icons.add),
               )),
           Positioned(
@@ -235,11 +254,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     fontSize: width * 0.04,
                                     fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(height: height*0.03,),
+                              SizedBox(
+                                height: height * 0.03,
+                              ),
                               TextFormField(
                                 style: const TextStyle(color: Colors.white),
                                 decoration: const InputDecoration(
-
                                     hintText: "Vaccine Name:",
                                     hintStyle: TextStyle(color: Colors.white60),
                                     border: InputBorder.none),
@@ -294,7 +314,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     fontSize: width * 0.04,
                                     fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(height: height*0.03,),
+                              SizedBox(
+                                height: height * 0.03,
+                              ),
                               TextFormField(
                                 maxLines: 5,
                                 style: const TextStyle(color: Colors.white),
@@ -303,44 +325,94 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     hintStyle: TextStyle(color: Colors.white60),
                                     border: InputBorder.none),
                               ),
-
                             ],
                           ),
                         )
                       ],
                     ),
-
                   ],
                 ),
               )),
           Positioned(
-            top: height*0.88,
-            left: width*0.33,
-            width: width*0.3,
+              top: height * 0.88,
+              left: width * 0.33,
+              width: width * 0.3,
               child: ElevatedButton(
-
                 style: ElevatedButton.styleFrom(
                   elevation: 5.0,
                   backgroundColor: Color(0xFF6CE04F),
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () {},
-                child:  Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.save),
-                    Text(" Save",style: TextStyle(fontSize: width*0.04),)
+                    Text(
+                      " Save",
+                      style: TextStyle(fontSize: width * 0.04),
+                    )
                   ],
                 ),
               )),
           Positioned(
               top: height * 0.03,
               left: width * 0.08,
-              child: IconButton(onPressed: (){
-                Navigator.of(context).pop();
-              }, icon: Icon(Icons.arrow_back_ios,color: Colors.white,))),
+              child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.white,
+                  ))),
         ],
       ),
     );
+  }
+
+  Future<void> uploadProfilePic() async {
+    try {
+      final _picker = ImagePicker();
+      // final _storage = FirebaseStorage.instance;
+      // final _firestore = FirebaseFirestore.instance;
+
+      // Pick image from gallery
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        // File imageFile = File(pickedFile.path);
+        //
+        // // Get current user's UID
+        // String uid = _auth.currentUser!.uid;
+        //
+        // // Upload image to Firebase Storage
+        // TaskSnapshot uploadTask = await _storage
+        //     .ref('profile_pics/$uid')
+        //     .putFile(imageFile);
+        //
+        // // Get the image URL
+        // String downloadURL = await uploadTask.ref.getDownloadURL();
+        //
+        // // Save the URL to Firestore under the user's document
+        // await _firestore.collection('users').doc(uid).update({
+        //   'profilePicURL': downloadURL,
+        // });
+        // firebase
+        //firebase above
+        setState(() {
+          isImageUploaded = true;
+          image = File(pickedFile.path);
+        });
+
+        print("Profile picture uploaded successfully.");
+      } else {
+        isImageUploaded = false;
+        print("No image selected.");
+      }
+    } catch (e) {
+      isImageUploaded = false;
+      print("Error uploading profile picture: $e");
+    }
   }
 }

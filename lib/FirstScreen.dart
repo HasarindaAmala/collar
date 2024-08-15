@@ -242,17 +242,19 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
         print("data: ${data['Breed']}");
 
         // Safely retrieve data with fallback values
-        String imageUrl = data['Image'] ?? ''; // Provide a fallback if Image is null
+        String imageUrl = data['Image'] ?? '';
+        String name = data['Name'] ?? '';// Provide a fallback if Image is null
         String imageBackUrl = data['Back'] ?? '';
         String age = data['Age'] ?? "0"; // Default to 0 if Age is null
-        String breed = data['Breed'] ?? 'Unknown Breed'; // Default to 'Unknown Breed' if null
+        String breed = data['Breed'] ?? 'Unknown Breed';
+        String Gender = data['Gender'] ?? ''; // Default to 'Unknown Breed' if null
 
         Cards.add(
           SizedBox(
             width: width * 0.35,
             child: GestureDetector(
               onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AcoountScreen(doc.id)));
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AccountScreen(doc.id,imageUrl,name,age,breed,Gender)));
               },
               child: Container(
                 child: Stack(
@@ -264,7 +266,7 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
                       padding: EdgeInsets.only(
                           left: width * 0.03, top: height * 0.015),
                       child: Text(
-                        doc.id,
+                        name,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: width * 0.04),
