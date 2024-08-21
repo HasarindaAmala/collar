@@ -146,9 +146,15 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
               top: height * 0.87,
               left: width * 0.4,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async{
+                  FirebaseFirestore firestore = FirebaseFirestore.instance;
+                  // Check if the username or phone number already exists
+                  CollectionReference id_total = await firestore.collection('Account');
+                  QuerySnapshot total_num = await id_total.get();
+                  DocumentSnapshot last = await total_num.docs.last;
+                  String id = last.id;
                   print("pressed");
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const RegisterScreen()));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(id)));
                 },
                 style: ElevatedButton.styleFrom(
                   overlayColor: Colors.blue,
@@ -165,8 +171,14 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
               top: height * 0.884,
               left: width * 0.425,
               child: GestureDetector(
-                onTap: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const RegisterScreen()));
+                onTap: () async{
+                  FirebaseFirestore firestore = FirebaseFirestore.instance;
+                  // Check if the username or phone number already exists
+                  CollectionReference id_total = await firestore.collection('Account');
+                  QuerySnapshot total_num = await id_total.get();
+                  DocumentSnapshot last = await total_num.docs.last;
+                  String id = last.id;
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(id)));
                 },
                 child: Icon(
                   Icons.add,

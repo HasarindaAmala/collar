@@ -2,6 +2,7 @@ import 'package:collar/FirstScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -9,7 +10,9 @@ void main() async {
           apiKey: "AIzaSyCcsldgmmIdZRRbzmRAbzwiiK2qe5yVIp4",
           appId: "1:76532800618:android:1d9b52ea6d5efc5332be13",
           messagingSenderId: "",
-          projectId: "collar-ab0d0"));
+          projectId: "collar-ab0d0",
+          storageBucket: "collar-ab0d0.appspot.com",
+      ));
   runApp(const SplashScreen());
 }
 
