@@ -1,4 +1,5 @@
 import 'package:collar/RegisterScreen.dart';
+import 'package:collar/search_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -17,6 +18,7 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
    late GifController controller1;
 
   List<Widget> Cards = [];
+  List<String> data_list = [];
 @override
   void initState() {
    controller1 = GifController(vsync: this);
@@ -64,6 +66,9 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
             left: width * 0.75,
             child: GestureDetector(
                 onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>searchScreen()));
+
+
                   print("pressed");
                 },
                 child: Text(
@@ -154,7 +159,7 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
                   DocumentSnapshot last = await total_num.docs.last;
                   String id = last.id;
                   print("pressed");
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(id)));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(id,false,data_list)));
                 },
                 style: ElevatedButton.styleFrom(
                   overlayColor: Colors.blue,
@@ -178,7 +183,7 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
                   QuerySnapshot total_num = await id_total.get();
                   DocumentSnapshot last = await total_num.docs.last;
                   String id = last.id;
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(id)));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(id,false,data_list)));
                 },
                 child: Icon(
                   Icons.add,
@@ -259,17 +264,27 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
         String imageBackUrl = data['Back'] ?? '';
         String age = data['Age'] ?? "0"; // Default to 0 if Age is null
         String breed = data['Breed'] ?? 'Unknown Breed';
-        String Gender = data['Gender'] ?? ''; // Default to 'Unknown Breed' if null
+        String weight = data['Weight'] ?? '';
+        String Gender = data['Gender'] ?? '';
+        String Dose = data['Dose number'] ?? '';
+        String Owner = data['Owner'] ?? '';
+        String VaccineName = data['Vaccine Name'] ?? '';
+        String VaccineDate = data['Vaccine Date'] ?? '';
+        String NextDate = data['Vaccine Next Date'] ?? '';
+        String MedicalHistory = data['Medical History'] ?? '';// Default to 'Unknown Breed' if null
+
+
 
         Cards.add(
           SizedBox(
             width: width * 0.35,
             child: GestureDetector(
               onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AccountScreen(doc.id,imageUrl,name,age,breed,Gender)));
+                data_list = [imageUrl,imageBackUrl,name,breed,age,weight,Gender,Owner,VaccineName,VaccineDate,NextDate,Dose,MedicalHistory];
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AccountScreen(doc.id,imageUrl,name,age,breed,Gender,data_list)));
               },
               child: Container(
-                child: Stack(
+                child: Stack(//gnd scl sda vin
                   children: [
                     SizedBox(
                         width: width * 0.35,

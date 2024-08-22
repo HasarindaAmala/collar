@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'FirstScreen.dart';
+import 'RegisterScreen.dart';
+import 'package:gif/gif.dart';
 
 late StreamController slideController;
 List<double> vibrationData1 = [0, 3, 1.5, 4, 2, 2.5, 3.5];
@@ -13,15 +17,16 @@ class AccountScreen extends StatefulWidget {
   final String age;
   final String breed;
   final String gender;
+  final List<String> data_list;
   const AccountScreen(
-      this.id, this.imageUrl, this.name, this.age, this.breed, this.gender,
+      this.id, this.imageUrl, this.name, this.age, this.breed, this.gender,  this.data_list,
       {super.key});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
 }
 
-class _AccountScreenState extends State<AccountScreen> {
+class _AccountScreenState extends State<AccountScreen> with TickerProviderStateMixin {
 
   List<FlSpot> createSpots(List<double> data) {
     return List.generate(
@@ -31,13 +36,26 @@ class _AccountScreenState extends State<AccountScreen> {
   double xValue = 0;
   Timer? timer;
   Random random = Random();
+  late GifController controller1;
+  late GifController controller2;
   
   @override
   void initState() {
     // TODO: implement initState
     slideController = StreamController.broadcast();
+    controller1 = GifController(vsync: this);
+    controller2 = GifController(vsync: this);
     startUpdatingGraph();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    controller1.dispose();
+    controller2.dispose();
+    slideController.close();
+    super.dispose();
   }
   void startUpdatingGraph() {
     timer = Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -92,18 +110,34 @@ class _AccountScreenState extends State<AccountScreen> {
                           "images/Ellipse 2 (2).png",
                         ))),
                 Positioned(
-                    top: height * 0.19,
+                    top: height * 0.22,
                     left: width * 0.36,
                     child: SizedBox(
                         width: width * 0.75,
-                        child: Image.asset(
-                          "images/vector-cow-Png.png",
-                        ))),
+                        child: Gif(
+                          image: AssetImage("images/cow1.gif"),
+                          controller: controller2, // controller2 must be initialized earlier
+                          fps: 5, // Adjust the frames per second if needed
+                          autostart: Autostart.no, // Disable autostart to handle animation manually
+                          placeholder: (context) => const Text('Loading...'),
+                          onFetchCompleted: () {
+                            controller2.reset();
+                            controller2.forward(); // Start playing once fetched
+                            controller2.addListener(() async {
+                              if (controller2.isCompleted) {
+                                // Wait for 2 seconds before restarting the animation
+                                await Future.delayed(const Duration(seconds: 10));
+                                controller2.reset(); // Reset the animation
+                                controller2.forward(); // Play the animation again
+                              }
+                            });
+                          },
+                        ),)),
                 Positioned(
                   top: height * 0.038,
                   left: width * 0.48,
                   child: Text(
-                    widget.name,
+                    widget.data_list[2],
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: width * 0.14,
@@ -187,7 +221,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     left: width * 0.03,
                     child: IconButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const FirstScreen()));
                       },
                       icon: Icon(
                         Icons.arrow_back_ios,
@@ -413,7 +448,39 @@ class _AccountScreenState extends State<AccountScreen> {
                                           children: [
                                             Text("Vaccination Data:",style: TextStyle(color: Colors.white,fontSize: width*0.04),),
                                             SizedBox(width: width*0.02,),
-                                            Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),),
+                                            GestureDetector(
+                                              onTap: (){
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext context) {
+                                                    return AlertDialog(
+                                                      icon: Icon(Icons.vaccines,color: Colors.white,),
+                                                      backgroundColor: Color(0xFF19A3C2),
+                                                      title: const Text("Vaccination Details",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                                      content: SizedBox(
+                                                        width: width*0.7,
+                                                        height: height*0.1,
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text("Vaccine Name:    ${widget.data_list[8]}",style: const TextStyle(color: Colors.white,fontWeight: FontWeight.normal),),
+                                                            Text("Vaccine Dose:     ${widget.data_list[11]}",style: const TextStyle(color: Colors.white,fontWeight: FontWeight.normal),),
+                                                            Text("Vaccinated Date: ${widget.data_list[9]}",style: const TextStyle(color: Colors.white,fontWeight: FontWeight.normal),),
+                                                            Text("Next Due Date:    ${widget.data_list[10]}",style: const TextStyle(color: Colors.white,fontWeight: FontWeight.normal),),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: (){
+                                                          Navigator.of(context).pop();
+                                                        }, child: const Text("ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),))
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                                child: const Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),)),
                                           ],
                                         ),
                                         SizedBox(height: height*0.006,),
@@ -421,7 +488,30 @@ class _AccountScreenState extends State<AccountScreen> {
                                           children: [
                                             Text("Medical History",style: TextStyle(color: Colors.white,fontSize: width*0.04),),
                                             SizedBox(width: width*0.02,),
-                                            Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),),
+                                            GestureDetector(
+                                              onTap: (){
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext context) {
+                                                    return AlertDialog(
+                                                      icon: Icon(Icons.medical_services_outlined,color: Colors.white,),
+                                                      backgroundColor: Color(0xFF19A3C2),
+                                                      title: const Text("Medical History",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                                      content: SizedBox(
+                                                        width: width*0.7,
+                                                        height: height*0.1,
+                                                        child: Text("${widget.data_list[12]}",style: TextStyle(color: Colors.white),)
+                                                      ),
+                                                      actions: [
+                                                        TextButton(onPressed: (){
+                                                          Navigator.of(context).pop();
+                                                        }, child: const Text("ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),))
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                                child: const Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),)),
                                           ],
                                         ),
                                         SizedBox(height: height*0.006,),
@@ -429,7 +519,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           children: [
                                             Text("Print Report",style: TextStyle(color: Colors.white,fontSize: width*0.04),),
                                             SizedBox(width: width*0.02,),
-                                            Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),),
+                                            const Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),),
                                           ],
                                         ),
 
@@ -444,7 +534,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                 left: width*0.17,
                                 child: Row(
                                   children: [
-                                    ElevatedButton(onPressed: (){},
+                                    ElevatedButton(onPressed: (){
+                                      print("pressed update");
+                                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(widget.id,true,widget.data_list)));
+                                    },
                                       style: ElevatedButton.styleFrom(
                                           fixedSize: Size(width*0.32, height*0.04),
                                           backgroundColor: const Color(0xFF6CE04F),
@@ -460,7 +553,61 @@ class _AccountScreenState extends State<AccountScreen> {
                                     SizedBox(
                                       width: width*0.04,
                                     ),
-                                    ElevatedButton(onPressed: (){},
+
+                                    ElevatedButton(onPressed: (){
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            icon: const Icon(Icons.delete,color: Colors.white,),
+                                            backgroundColor: Colors.redAccent,
+                                            title: const Text("Delete Account",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                            content: SizedBox(
+                                                width: width*0.7,
+                                                height: height*0.1,
+                                                child: const Text("Are you sure ? this will permenetly delete your account",style: TextStyle(color: Colors.white),)
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: (){
+                                                Navigator.of(context).pop();
+                                              }, child: const Text("Cancel",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)),
+                                              TextButton(onPressed: () async {
+                                                await deleteUser(widget.id);
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext context) {
+                                                    return AlertDialog(
+
+                                                      backgroundColor: Colors.white,
+                                                      title: const Text("Account Deleted!",style: TextStyle(color: Colors.blueAccent,fontWeight: FontWeight.bold),),
+                                                      content: Gif(
+                                                        image: AssetImage("images/done1.gif"),
+                                                        controller: controller1, // if duration and fps is null, original gif fps will be used.
+                                                        //fps: 30,
+                                                        //duration: const Duration(seconds: 3),
+                                                        autostart: Autostart.no,
+                                                        placeholder: (context) => const Text('Loading...'),
+                                                        onFetchCompleted: () {
+                                                          controller1.reset();
+                                                          controller1.forward();
+                                                        },
+                                                      ),
+                                                      actions: [
+
+                                                        TextButton(onPressed: () async {
+                                                          Navigator.of(context).push(MaterialPageRoute(
+                                                              builder: (context) => const FirstScreen()));
+                                                        }, child: const Text("Ok",style: TextStyle(color: Colors.blueAccent,fontWeight: FontWeight.bold),)),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }, child: const Text("Ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
                                       style: ElevatedButton.styleFrom(
                                           fixedSize: Size(width*0.32, height*0.055),
                                           backgroundColor: const Color(0xFF304178),
@@ -615,7 +762,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                 left: width*0.17,
                                 child: Row(
                                   children: [
-                                    ElevatedButton(onPressed: (){},
+                                    ElevatedButton(onPressed: (){
+                                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=> RegisterScreen(widget.id,true,widget.data_list)));
+                                    },
                                       style: ElevatedButton.styleFrom(
                                         fixedSize: Size(width*0.32, height*0.04),
                                         backgroundColor: const Color(0xFF6CE04F),
@@ -631,7 +780,60 @@ class _AccountScreenState extends State<AccountScreen> {
                                     SizedBox(
                                       width: width*0.04,
                                     ),
-                                    ElevatedButton(onPressed: (){},
+                                    ElevatedButton(onPressed: (){
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            icon: const Icon(Icons.delete,color: Colors.white,),
+                                            backgroundColor: Colors.redAccent,
+                                            title: const Text("Delete Account",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                            content: SizedBox(
+                                                width: width*0.7,
+                                                height: height*0.1,
+                                                child: const Text("Are you sure ? this will permenetly delete your account",style: TextStyle(color: Colors.white),)
+                                            ),
+                                            actions: [
+                                              TextButton(onPressed: (){
+                                                Navigator.of(context).pop();
+                                              }, child: const Text("Cancel",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)),
+                                              TextButton(onPressed: () async {
+                                               await deleteUser(widget.id);
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext context) {
+                                                    return AlertDialog(
+
+                                                      backgroundColor: Colors.white,
+                                                      title: const Text("Account Deleted!",style: TextStyle(color: Colors.blueAccent,fontWeight: FontWeight.bold),),
+                                                      content: Gif(
+                                                        image: AssetImage("images/done1.gif"),
+                                                        controller: controller1, // if duration and fps is null, original gif fps will be used.
+                                                        //fps: 30,
+                                                        //duration: const Duration(seconds: 3),
+                                                        autostart: Autostart.no,
+                                                        placeholder: (context) => const Text('Loading...'),
+                                                        onFetchCompleted: () {
+                                                          controller1.reset();
+                                                          controller1.forward();
+                                                        },
+                                                      ),
+                                                      actions: [
+
+                                                        TextButton(onPressed: () async {
+                                                          Navigator.of(context).push(MaterialPageRoute(
+                                                              builder: (context) => const FirstScreen()));
+                                                        }, child: const Text("Ok",style: TextStyle(color: Colors.blueAccent,fontWeight: FontWeight.bold),)),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }, child: const Text("Ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       fixedSize: Size(width*0.32, height*0.055),
                                       backgroundColor: const Color(0xFF304178),
@@ -660,5 +862,14 @@ class _AccountScreenState extends State<AccountScreen> {
         ],
       ),
     );
+  }
+  Future<void> deleteUser(String userId) async {
+    try {
+      // Reference to the 'Account' collection and specific document
+      await FirebaseFirestore.instance.collection('Account').doc(userId).delete();
+      print("User with ID: $userId deleted successfully.");
+    } catch (e) {
+      print("Failed to delete user: $e");
+    }
   }
 }

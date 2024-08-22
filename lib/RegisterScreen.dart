@@ -11,7 +11,9 @@ import 'FirstScreen.dart';
 
 class RegisterScreen extends StatefulWidget {
   String id;
-  RegisterScreen(this.id, {super.key});
+  bool update;
+  List<String> data;
+  RegisterScreen(this.id,this.update,this.data, {super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -40,6 +42,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController medicalHistoryController = TextEditingController();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    if(widget.update == true){
+      idController.text = widget.id;
+      usernameController.text = widget.data[2];
+      breedController.text = widget.data[3];
+      ageController.text = widget.data[4];
+      weightController.text = widget.data[5];
+      genderController.text = widget.data[6];
+      ownerController.text = widget.data[7];
+      vaccinationNameController.text = widget.data[8];
+      vaccinationDateController.text = widget.data[9];
+      vaccinationNextDateController.text = widget.data[10];
+      vaccinationDoseNumberController.text = widget.data[11];
+      medicalHistoryController.text = widget.data[12];
+      downloadUrl = widget.data[0];
+      backUrl = widget.data[1];
+      isImageUploaded = true;
+
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
@@ -65,8 +91,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white24,
-                  image:
-
+                  image:widget.update == true?
+                  DecorationImage(image: NetworkImage(widget.data[0]))
+                  :
                   isImageUploaded == true
                       ? DecorationImage(image: FileImage(image),fit: BoxFit.cover)
                       : const DecorationImage(
@@ -139,7 +166,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           top: height * 0.02,
                           width: width * 0.68,
                           height: height * 0.1,
-                          child: TextFormField(
+                          child: widget.update == true?TextFormField(
+                            controller: idController,
+                            readOnly: false,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                                hintText: "ID ( M01,M02..)",
+                                hintStyle: TextStyle(color: Colors.white60),
+                                border: InputBorder.none),
+                          ):TextFormField(
                             initialValue: getNextId(widget.id),
                             readOnly: true,
                             style: const TextStyle(color: Colors.white),
@@ -393,74 +428,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: () async {
 
                   if(usernameController.text != ""  && breedController.text != "" && ageController.text != "" && weightController.text != '' && genderController.text !="" && ownerController.text != "" && vaccinationNameController.text != "" && vaccinationDateController.text != '' && vaccinationDoseNumberController.text !="" && vaccinationNextDateController.text != "" && medicalHistoryController.text != "" && isImageUploaded == true ){
-                    await saveUser();
-                    isLoading == false?
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text("Saved"),
-                          content: Text("Your profile saved !"),
-                          actions: [
-                            TextButton(onPressed: (){
-                              setState(() {
-                                isLoading = true;
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => const FirstScreen()));
+                    if(widget.update == true){
+                      await updateUser(idController.text);
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("Updated!"),
+                            content: Text("Your profile updated !"),
+                            actions: [
+                              TextButton(onPressed: (){
+                                setState(() {
+                                  isLoading = true;
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => const FirstScreen()));
 
-                              });
-                            }, child: Text("ok"))
-                          ],
-                        );
-                      },
-                    ): setState(() {
+                                });
+                              }, child: Text("ok"))
+                            ],
+                          );
+                        },
+                      );
+                    }else{
+                      await saveUser();
+                      isLoading == false?
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("Saved"),
+                            content: Text("Your profile saved !"),
+                            actions: [
+                              TextButton(onPressed: (){
+                                setState(() {
+                                  isLoading = true;
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => const FirstScreen()));
 
-                    });
-                    // FutureBuilder(future: saveUser(), builder: (context,snapshot){
-                    //   if(snapshot.connectionState == ConnectionState.waiting){
-                    //     return const AlertDialog(
-                    //       title: Text("Saving.."),
-                    //       content: CircularProgressIndicator(),
-                    //       actions: [
-                    //       ],
-                    //     );
-                    //   }else if(snapshot.hasData){
-                    //     if(snapshot.data == true){
-                    //       return AlertDialog(
-                    //         title: Text("Save Successfully!"),
-                    //         content: const CircularProgressIndicator(),
-                    //         actions: [
-                    //           TextButton(
-                    //             onPressed: () => Navigator.of(context).pop(),
-                    //             child: Text("OK"),
-                    //           ),
-                    //         ],
-                    //       );
-                    //     }else{
-                    //       return AlertDialog(
-                    //         title: Text("Error"),
-                    //         content: Text(""),
-                    //         actions: [
-                    //           TextButton(
-                    //             onPressed: () => Navigator.of(context).pop(),
-                    //             child: Text("OK"),
-                    //           ),
-                    //         ],
-                    //       );
-                    //     }
-                    //   }else{
-                    //     return AlertDialog(
-                    //       title: Text("Error"),
-                    //       content: Text(""),
-                    //       actions: [
-                    //         TextButton(
-                    //           onPressed: () => Navigator.of(context).pop(),
-                    //           child: Text("OK"),
-                    //         ),
-                    //       ],
-                    //     );
-                    //   }
-                    // });
+                                });
+                              }, child: Text("ok"))
+                            ],
+                          );
+                        },
+                      ): setState(() {
+
+                      });
+                    }
+
+
                   }else{
                     showDialog(
                       context: context,
@@ -484,10 +499,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.save),
+                    widget.update == false?
                     Text(
                       " Save",
                       style: TextStyle(fontSize: width * 0.04),
-                    )
+                    ):Text("Update",style: TextStyle(fontSize: width * 0.035))
                   ],
                 ),
               )),
@@ -582,6 +598,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // Combine the prefix and the incremented number part
     return "$prefix$nextNumberPart";
   }
+  Future<bool> updateUser(String userId) async {
+    try {
+      Map<String, dynamic> updatedAccountData = {
+        'Name': usernameController.text,
+        'Breed': breedController.text,
+        'Age': ageController.text,
+        'Weight': weightController.text,
+        'Gender': genderController.text,
+        'Owner': ownerController.text,
+        'Vaccine Name': vaccinationNameController.text,
+        'Vaccine Date': vaccinationDateController.text,
+        'Vaccine Next Date': vaccinationNextDateController.text,
+        'Dose number': vaccinationDoseNumberController.text,
+        'Medical History': medicalHistoryController.text,
+        'Image': downloadUrl,
+        'Back': backUrl,
+      };
+
+      // Reference to the 'Account' collection
+      CollectionReference accountCollection = FirebaseFirestore.instance.collection('Account');
+
+      // Update the document with the specified userId
+      await accountCollection.doc(userId).update(updatedAccountData);
+
+      print("User updated successfully");
+      return true;
+    } catch (e) {
+      print("Failed to update user: $e");
+      return false;
+    }
+  }
+
   Future<bool> saveUser() async{
 
     String userId = getNextId(widget.id);
@@ -615,4 +663,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // Add a new document with a custom ID (userId) and data (accountData)
     await accountCollection.doc(userId).set(accountData);
   }
+
 }
