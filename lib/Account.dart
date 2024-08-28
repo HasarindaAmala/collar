@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'FirstScreen.dart';
 import 'RegisterScreen.dart';
 import 'package:gif/gif.dart';
@@ -32,13 +33,16 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
     return List.generate(
         data.length, (index) => FlSpot(index.toDouble(), data[index]));
   }
+  DatabaseReference realtime = FirebaseDatabase.instance.ref().child('data');
   List<FlSpot> spots = [];
   double xValue = 0;
   Timer? timer;
   Random random = Random();
   late GifController controller1;
   late GifController controller2;
-  
+  String heartRate = "0";
+  String Temperature = "0";
+  double magnitude = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -46,6 +50,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
     controller1 = GifController(vsync: this);
     controller2 = GifController(vsync: this);
     startUpdatingGraph();
+
     super.initState();
   }
 
@@ -61,7 +66,8 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
     timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         xValue += 1;
-        double yValue = getRandomYValue();
+        double yValue = magnitude/10;
+        print(yValue);
         spots.add(FlSpot(xValue, yValue));
 
         // Keep only the last 20 spots to simulate real-time effect
@@ -80,6 +86,19 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+
+    realtime.onValue.listen(
+            (event){
+          setState(() {
+            heartRate = double.parse(event.snapshot.child("Heart_Rate").value.toString()).toInt().toString();
+            Temperature = double.parse(event.snapshot.child("Temperature").value.toString()).toInt().toStringAsFixed(1);
+            magnitude = double.parse(event.snapshot.child("Magnitude").value.toString());
+
+          });
+        }
+    );
+
+
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -248,7 +267,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                           if (details.primaryDelta! > 7) {
                             slideController.sink.add(false);
                           }
-                          print(details.primaryDelta);
+                          //print(details.primaryDelta);
                         },
                         child: Container(
                           width: width,
@@ -299,10 +318,10 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                   child: SizedBox(
                                       width: width * 0.35,
                                       child: Text(
-                                        "88",
+                                        heartRate,
                                         style: TextStyle(
                                             color: Colors.white60,
-                                            fontSize: width * 0.2,
+                                            fontSize: width * 0.13,
                                             fontWeight: FontWeight.bold),
                                       ))),
                               Positioned(
@@ -329,7 +348,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                   child: SizedBox(
                                       width: width * 0.35,
                                       child: Text(
-                                        "312",
+                                        Temperature,
                                         style: TextStyle(
                                             color: Colors.white60,
                                             fontSize: width * 0.13,
@@ -373,8 +392,8 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                 height: height*0.3,
                                 child: LineChart(
                                   LineChartData(
-                                    minY: 0.0,
-                                    maxY: 20,
+                                    minY: 68,
+                                    maxY: 72,
                                     backgroundColor: Colors.transparent,
                                     borderData: FlBorderData(
                                       show: true,
@@ -643,7 +662,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                         if (details.primaryDelta! < -7) {
                           slideController.sink.add(true);
                         }
-                        print(details.primaryDelta);
+                        //print(details.primaryDelta);
                       },
                       child: Container(
                         width: width,
@@ -688,15 +707,15 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                     width: width * 0.28,
                                     child: Image.asset("images/2387835.png"))),
                             Positioned(
-                                top: height * 0.05,
+                                top: height * 0.07,
                                 left: width * 0.1,
                                 child: SizedBox(
                                     width: width * 0.35,
                                     child: Text(
-                                      "88",
+                                      heartRate,
                                       style: TextStyle(
                                           color: Colors.white60,
-                                          fontSize: width * 0.2,
+                                          fontSize: width * 0.13,
                                           fontWeight: FontWeight.bold),
                                     ))),
                             Positioned(
@@ -723,7 +742,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                 child: SizedBox(
                                     width: width * 0.35,
                                     child: Text(
-                                      "312",
+                                      Temperature,
                                       style: TextStyle(
                                           color: Colors.white60,
                                           fontSize: width * 0.13,
@@ -735,7 +754,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                 child: SizedBox(
                                     width: width * 0.35,
                                     child: Text(
-                                      "K",
+                                      "C",
                                       style: TextStyle(
                                           color: Colors.white60,
                                           fontSize: width * 0.12,

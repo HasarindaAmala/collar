@@ -12,6 +12,7 @@ void main() async {
           messagingSenderId: "",
           projectId: "collar-ab0d0",
           storageBucket: "collar-ab0d0.appspot.com",
+          databaseURL: "https://collar-ab0d0-default-rtdb.firebaseio.com",
       ));
   runApp(const SplashScreen());
 }
