@@ -49,27 +49,13 @@ class _FirstScreenState extends State<FirstScreen> with TickerProviderStateMixin
               ),
             ),
           ),
-          Positioned(
-            top: height * 0.07,
-            left: width * 0.8,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF353C7B).withOpacity(0.65),
-                  foregroundColor: Colors.white,
-                  shape: const CircleBorder()),
-              child: const Icon(Icons.notification_add),
-            ),
-          ),
+
           Positioned(
             top: height * 0.52,
             left: width * 0.75,
             child: GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>searchScreen()));
-
-
-                  print("pressed");
                 },
                 child: Text(
                   "See All..",

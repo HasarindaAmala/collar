@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'FirstScreen.dart';
 import 'RegisterScreen.dart';
 import 'package:gif/gif.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 late StreamController slideController;
+late StreamController notificationController;
 List<double> vibrationData1 = [0, 3, 1.5, 4, 2, 2.5, 3.5];
 
 class AccountScreen extends StatefulWidget {
@@ -43,10 +48,12 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
   String heartRate = "0";
   String Temperature = "0";
   double magnitude = 0;
+  bool saved= false;
   @override
   void initState() {
     // TODO: implement initState
     slideController = StreamController.broadcast();
+    notificationController = StreamController();
     controller1 = GifController(vsync: this);
     controller2 = GifController(vsync: this);
     startUpdatingGraph();
@@ -59,6 +66,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
     // TODO: implement dispose
     controller1.dispose();
     controller2.dispose();
+    notificationController.close();
     slideController.close();
     super.dispose();
   }
@@ -93,6 +101,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
             heartRate = double.parse(event.snapshot.child("Heart_Rate").value.toString()).toInt().toString();
             Temperature = double.parse(event.snapshot.child("Temperature").value.toString()).toInt().toStringAsFixed(1);
             magnitude = double.parse(event.snapshot.child("Magnitude").value.toString());
+            notification();
 
           });
         }
@@ -154,7 +163,7 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                         ),)),
                 Positioned(
                   top: height * 0.038,
-                  left: width * 0.48,
+                  left: width * 0.38,
                   child: Text(
                     widget.data_list[2],
                     style: TextStyle(
@@ -163,6 +172,151 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                         fontWeight: FontWeight.bold),
                   ),
                 ),
+                   Positioned(
+                     top: height * 0.06,
+                     left: width * 0.83,
+                     child: StreamBuilder(
+                       initialData: "false",
+                       stream: notificationController.stream,
+                       builder: (context, snapshot) {
+                         if(snapshot.hasData ){
+                           if(snapshot.data == "heart"){
+                             return ElevatedButton(
+                               onPressed: () {
+
+                                 showDialog(
+                                   context: context,
+                                   builder: (BuildContext context) {
+                                     return AlertDialog(
+                                       icon: Icon(Icons.heart_broken,color: Colors.white,),
+                                       backgroundColor: Colors.red.withOpacity(0.8),
+                                       title: const Text("Emergancy !!",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                       content: SizedBox(
+                                           width: width*0.7,
+                                           height: height*0.1,
+                                           child: Text("Your moo can have some Heart problems!!! please check ASAP",style: TextStyle(color: Colors.white),)
+                                       ),
+                                       actions: [
+                                         TextButton(onPressed: (){
+                                           Navigator.of(context).pop();
+                                         }, child: const Text("ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),))
+                                       ],
+                                     );
+                                   },
+                                 );
+
+                               },
+                               style: ElevatedButton.styleFrom(
+                                   backgroundColor:  Colors.red,
+                                   foregroundColor: Colors.white,
+                                   shape: const CircleBorder()),
+                               child: const Icon(Icons.notification_add),
+                             );
+                           }else if(snapshot.data == "Temperature"){
+                             return ElevatedButton(
+                               onPressed: () {
+
+                                 showDialog(
+                                   context: context,
+                                   builder: (BuildContext context) {
+                                     return AlertDialog(
+                                       icon: Icon(Icons.emergency_outlined,color: Colors.white,),
+                                       backgroundColor: Colors.red.withOpacity(0.8),
+                                       title: const Text("Emergancy !!",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                       content: SizedBox(
+                                           width: width*0.7,
+                                           height: height*0.1,
+                                           child: Text("Your moo's Body temperature is not normal!!! please check ASAP",style: TextStyle(color: Colors.white),)
+                                       ),
+                                       actions: [
+                                         TextButton(onPressed: (){
+                                           Navigator.of(context).pop();
+                                         }, child: const Text("ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),))
+                                       ],
+                                     );
+                                   },
+                                 );
+
+                               },
+                               style: ElevatedButton.styleFrom(
+                                   backgroundColor:  Colors.red,
+                                   foregroundColor: Colors.white,
+                                   shape: const CircleBorder()),
+                               child: const Icon(Icons.notification_add),
+                             );
+
+                           }else if(snapshot.data == "magnitude"){
+                             return ElevatedButton(
+                               onPressed: () {
+
+                                 showDialog(
+                                   context: context,
+                                   builder: (BuildContext context) {
+                                     return AlertDialog(
+                                       icon: Icon(Icons.do_not_step_rounded,color: Colors.white,),
+                                       backgroundColor: Colors.red.withOpacity(0.8),
+                                       title: const Text("Emergancy !!",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                       content: SizedBox(
+                                           width: width*0.7,
+                                           height: height*0.1,
+                                           child: Text("Your moo's Movements are not normal!!! please check ASAP",style: TextStyle(color: Colors.white),)
+                                       ),
+                                       actions: [
+                                         TextButton(onPressed: (){
+                                           Navigator.of(context).pop();
+                                         }, child: const Text("ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),))
+                                       ],
+                                     );
+                                   },
+                                 );
+
+                               },
+                               style: ElevatedButton.styleFrom(
+                                   backgroundColor:  Colors.red,
+                                   foregroundColor: Colors.white,
+                                   shape: const CircleBorder()),
+                               child: const Icon(Icons.notification_add),
+                             );
+
+                           }else{
+                             return Text("");
+                           }
+
+                         }else{
+                           return ElevatedButton(
+                             onPressed: () {
+                               showDialog(
+                                 context: context,
+                                 builder: (BuildContext context) {
+                                   return AlertDialog(
+                                     icon: Icon(Icons.medical_services_outlined,color: Colors.white,),
+                                     backgroundColor: Color(0xFF19A3C2),
+                                     title: const Text("Notification",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+                                     content: SizedBox(
+                                         width: width*0.7,
+                                         height: height*0.1,
+                                         child: Text("No notifications",style: TextStyle(color: Colors.white),)
+                                     ),
+                                     actions: [
+                                       TextButton(onPressed: (){
+                                         Navigator.of(context).pop();
+                                       }, child: const Text("ok",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),))
+                                     ],
+                                   );
+                                 },
+                               );
+                             },
+                             style: ElevatedButton.styleFrom(
+                                 backgroundColor: const Color(0xFF353C7B).withOpacity(0.65),
+                                 foregroundColor: Colors.white,
+                                 shape: const CircleBorder()),
+                             child: const Icon(Icons.notification_add),
+                           );
+                         }
+
+                       }
+                     ),
+                   ),
                 Positioned(
                   top: height * 0.18,
                   left: width * 0.05,
@@ -538,7 +692,25 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
                                           children: [
                                             Text("Print Report",style: TextStyle(color: Colors.white,fontSize: width*0.04),),
                                             SizedBox(width: width*0.02,),
-                                            const Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),),
+                                             GestureDetector(
+                                               onTap: (){
+                                                showDialog(context: context, builder: (BuildContext context){
+                                                  generateAndSavePdf(widget.data_list);
+                                                  return AlertDialog(
+                                                    icon: Icon(Icons.save_alt,color: Colors.black,),
+                                                    title: Text("Medical report "),
+                                                    content: Text("Your Medical report is saved successfully!"),
+                                                    actions: [
+                                                      TextButton(onPressed: (){
+                                                        Navigator.of(context).pop();
+                                                      }, child: Text("OK")),
+                                                    ],
+                                                  );
+                                                });
+
+
+                                               },
+                                                 child: Text("Click here",style: TextStyle(color: Color(0xFF304178),fontWeight: FontWeight.bold,decoration: TextDecoration.underline),)),
                                           ],
                                         ),
 
@@ -891,4 +1063,65 @@ class _AccountScreenState extends State<AccountScreen> with TickerProviderStateM
       print("Failed to delete user: $e");
     }
   }
+  Future<void> generateAndSavePdf(List data) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            children: [
+              pw.Text("${data[2]}  age:${data[4]}  Breed:${data[3]}",style: pw.TextStyle(fontSize: 30.0,fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 30.0),
+              pw.Text("Vaccination Name : ${data[8]}",style: pw.TextStyle(fontSize: 15.0,)),
+              pw.SizedBox(height: 10.0),
+              pw.Text("Vaccination Date : ${data[9]}",style: pw.TextStyle(fontSize: 15.0,)),
+              pw.SizedBox(height: 10.0),
+              pw.Text("Next Vaccination Date : ${data[10]}",style: pw.TextStyle(fontSize: 15.0,)),
+              pw.SizedBox(height: 10.0),
+              pw.Text("Medical History : ${data[12]}",style: pw.TextStyle(fontSize: 15.0,)),
+              pw.SizedBox(height: 10.0),
+              pw.Text("Heart Rate : $heartRate",style: pw.TextStyle(fontSize: 15.0,)),
+              pw.SizedBox(height: 10.0),
+              pw.Text("Body Temperature : $Temperature",style: pw.TextStyle(fontSize: 15.0,)),
+
+            ],
+          );
+        },
+      ),
+    );
+
+    if (await Permission.storage.request().isGranted) {
+      Directory? directory;
+
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download'); // Save to Downloads folder
+      } else {
+        directory = await getApplicationDocumentsDirectory(); // iOS or other platforms
+      }
+
+      final path = "${directory.path}/${data[2]}.pdf";
+      final file = File(path);
+      await file.writeAsBytes(await pdf.save());
+
+      print('PDF saved at: $path');
+    } else {
+      print('Permission denied');
+    }
+    setState(() {
+      saved == true;
+    });
+
+  }
+  void notification(){
+    if( double.parse(heartRate) >= 90 && double.parse(heartRate) <= 30 ){
+      notificationController.sink.add("heart");
+    }else if(double.parse(Temperature) >= 40 && double.parse(Temperature) <= 30){
+      notificationController.sink.add("Temperature");
+    }else if (magnitude >= 71 && double.parse(Temperature) <= 69){
+      notificationController.sink.add("magnitude");
+    }else{
+      notificationController.sink.add("false");
+    }
+    }
 }
